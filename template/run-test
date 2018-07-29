@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+
+NAME="${PWD##*/}"
+
+function warmup-test-run {
+  cat "${WARMUP_HAYSTACK}" | (./haystacks-rs --needles "${WARMUP_NEEDLES}" 2>&1)
+}
+
+function test-run {
+  cat "${HAYSTACK}" | ./haystacks-rs --needles "${NEEDLES}" 2>&1 1>/dev/null
+}
+
+
+function printHelp() {
+  cat <<EOF
+USAGE:
+    run --haystack <FILE> --needles <FILE> --warmup-haystack <FILE> --warmup-needles <FILE> --warmup-result <OUTPUT>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --haystack <FILE>            File to search
+        --needles <FILE>             File of records to look for
+        --warmup-haystacks <FILE>    File to search in warmup phase
+        --warmup-needles <FILE>      File of records to look for in warmup phase
+        --warmup-result <OUTPUT>     Expected output of warmup phase
+EOF
+}
+
+while [[ ${#} > 0 ]]; do
+
+    case "${1}" in
+
+        -h|--help)
+          printHelp
+          exit 1
+        ;;
+
+        --haystack)
+          HAYSTACK="${2}";
+          shift
+        ;;
+
+        --needles)
+          NEEDLES="${2}";
+          shift
+        ;;
+
+        --warmup-haystack)
+          WARMUP_HAYSTACK="${2}";
+          shift
+        ;;
+
+        --warmup-needles)
+          WARMUP_NEEDLES="${2}";
+          shift
+        ;;
+
+        --warmup-result)
+          WARMUP_RESULT="${2}";
+          shift
+        ;;
+    esac
+    shift
+done
+
+
+REQUIRED_ARGS=(HAYSTACK NEEDLES WARMUP_HAYSTACK WARMUP_NEEDLES WARMUP_RESULT)
+MISSING_ARGS=()
+for VAR in ${REQUIRED_ARGS[@]}; do
+  [[ -z "${!VAR}" ]] && MISSING_ARGS+=( "--${VAR}" )
+done
+
+if [ ${#MISSING_ARGS[@]} -gt 0 ]; then
+  echo "Error: missing required parameters: " $(echo "${MISSING_ARGS[@]}" | tr '[:upper:]' '[:lower:]' | tr '_' '-' )
+  echo
+  printHelp
+  exit 1
+fi
+
+FILES=(HAYSTACK NEEDLES WARMUP_HAYSTACK WARMUP_NEEDLES)
+MISSING_FILES=()
+for FILE in ${FILES[@]}; do
+  [ ! -f "${!FILE}" ] && MISSING_FILES+=( "${!FILE}" )
+done
+
+if [ ${#MISSING_FILES[@]} -gt 0 ]; then
+  echo "Error: files not found:"
+  for FILE in ${MISSING_FILES[@]}; do
+    echo "    '${FILE}'"
+  done
+  echo
+  exit 1
+fi
+
+#
+# Warmup
+#
+
+WARMUP_EXPECTED_RESULT="${WARMUP_RESULT}"
+WARMUP_ACTUAL_RESULT="$(warmup-test-run)"
+
+if [[ "${WARMUP_ACTUAL_RESULT}" != "${WARMUP_EXPECTED_RESULT}" ]]; then
+  cat <<EOF
+Warmup Test Failed
+
+Expected:
+${WARMUP_EXPECTED_RESULT}
+
+Actual:
+${WARMUP_ACTUAL_RESULT}
+EOF
+  exit 1
+fi
+
+
+#
+# Test
+# 
+
+TEST_LINE_COUNT="$(awk 'END{print FNR}' ${NEEDLES})"
+
+TIMING_START="$(gdate +%s%3N)"
+
+test-run
+
+RUN_STATUS=${?}
+
+# $(gtimeout 60s | cat "${HAYSTACK}" | java -jar ./haystacks-1.0-SNAPSHOT-all.jar --needles "${NEEDLES}" 2>&1 1>/dev/null)
+TIMING_END="$(gdate +%s%3N)"
+TIMING_DURATION="$(gdate -d@`echo "scale=3; (${TIMING_END} - ${TIMING_START})/1000" | bc` -u +%H:%M:%S.%3N)"
+
+if [ ${RUN_STATUS} -ne 0 ]; then
+  echo "${NAME},${TEST_LINE_COUNT},-"
+else
+  echo "${NAME},${TEST_LINE_COUNT},${TIMING_DURATION}"
+fi
+

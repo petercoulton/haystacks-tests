@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const readAndSpilt = file =>
+  fs
+    .readFileSync(file)
+    .toString()
+    .match(/[^\r\n]+/g)
+
+const h = readAndSpilt(0)
+const n = readAndSpilt(process.argv[process.argv.indexOf('--needles') + 1]);
+
+for (i = 0; i < h.length; i++) {
+  const d = n.indexOf(h[i]);
+  if (d > -1) {
+    console.log(h[i]);
+    n.splice(d, 1); 
+  } else if (!n.length) { break }
+}
