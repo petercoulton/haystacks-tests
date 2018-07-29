@@ -1,19 +1,29 @@
 #!/usr/bin/env bash
 
+
+DATA_DIR="$(pwd)/data"
+HAYSTACK="${DATA_DIR}/haystack.txt"
+WARMUP_NEEDLES="${DATA_DIR}/warmup-needles.txt"
+WARMUP_HAYSTACK="${DATA_DIR}/warmup-haystack.txt"
+WARMUP_EXPECTED_RESULT="e"
+TEST_NAME=""
+VERBOSE="false"
+
 function printHelp() {
   cat <<EOF
 USAGE:
-    run-all-tests [--app <APP_PATH>]
+    run-all-tests [--test <TEST_NAME>]
 
 FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+    -v, --verbose              Print debug information during execution
+    -h, --help                 Prints help information
 
 OPTIONS:
-        --app <APP_PATH>            Path the app to test
+        --test <TEST_NAME>     Path to the test to run
 EOF
 }
-APP_PATH=""
+
+
 while [[ ${#} > 0 ]]; do
 
     case "${1}" in
@@ -23,50 +33,83 @@ while [[ ${#} > 0 ]]; do
           exit 1
         ;;
 
-        --app)
-          APP_PATH="${2}";
+        --test)
+          TEST_NAME="${2}";
           shift
+        ;;
+
+        -v|--verbose)
+          VERBOSE="true";
         ;;
 
     esac
     shift
 done
 
-DATA_DIR="$(pwd)/data"
 
-if [ ! -z "${APP_PATH}" ]; then
+function run-tests() {
+  #
+  # Warmup Test
+  #
 
-    for SAMPLE in $(ls -1 ${DATA_DIR}/needles-*.txt); do
-      cd ${APP_PATH}
-      build
-      gtimeout 60s run-test \
-        --haystack ${DATA_DIR}/haystack.txt \
-        --needles ${SAMPLE} \
-        --warmup-haystack ${DATA_DIR}/warmup-haystack.txt \
-        --warmup-needles ${DATA_DIR}/warmup-needles.txt \
-        --warmup-result e
-      cd - 1>/dev/null
-    done
+  WARMUP_ACTUAL_RESULT="$(gtimeout 10s run-test "${WARMUP_HAYSTACK}" "${WARMUP_NEEDLES}" 2>&1)"
 
+  if [[ "${WARMUP_ACTUAL_RESULT}" != "${WARMUP_EXPECTED_RESULT}" ]]; then
+    echo "${APP_NAME},0,failed warmup"
+    echo "${VERBOSE}"
+    if [[ "${VERBOSE}" == "true" ]]; then 
+      echo "Expected: ${WARMUP_EXPECTED_RESULT}"
+      echo "Actual: ${WARMUP_ACTUAL_RESULT}"
+    fi
+    return 1
+  fi
+
+  for SAMPLE in $(ls -1 ${DATA_DIR}/needles-*.txt); do
+
+    #
+    # Test
+    # 
+
+    if [ -f run-test ]; then
+      TEST_LINE_COUNT="$(awk 'END{print FNR}' ${SAMPLE})"
+
+      TIMING_START="$(gdate +%s%3N)"
+
+      TEST_RESULT="$(gtimeout 10s run-test "${HAYSTACK}" "${SAMPLE}")"
+      RUN_STATUS=${?}
+
+      TIMING_END="$(gdate +%s%3N)"
+      TIMING_DURATION="$(gdate -d@`echo "scale=3; (${TIMING_END} - ${TIMING_START})/1000" | bc  | sed 's/^[.]/0./'` -u +%H:%M:%S.%3N)"
+
+      TEST_RESULT_LINE_COUNT="$(echo "${TEST_RESULT}" | wc -l | tr -d '[:space:]')"
+
+      if [ ${RUN_STATUS} -eq 0 ]; then
+        if [ "${TEST_RESULT_LINE_COUNT}" == "${TEST_LINE_COUNT}" ]; then
+          echo "${APP_NAME},${TEST_LINE_COUNT},${TIMING_DURATION}"
+        else
+            echo "${APP_NAME},${TEST_LINE_COUNT},failed - expected ${TEST_LINE_COUNT} results but got ${TEST_RESULT_LINE_COUNT}"
+        fi
+
+      else
+          echo "${APP_NAME},${TEST_LINE_COUNT},failed - exectution exceeded 60 seconds"
+      fi      
+    fi
+  done
+}
+
+
+if [ ! -z "${TEST_NAME}" ]; then
+    cd ${TEST_NAME}
+    APP_NAME="${PWD##*/}"
+    run-tests
+    cd - 1>/dev/null
 else
 
   for APP in $(ls -1 round-1); do
-    for SAMPLE in $(ls -1 ${DATA_DIR}/needles-*.txt); do
-      cd round-1/${APP}/
-
-      if [ -f run-test ]; then
-        build
-        gtimeout 60s run-test \
-          --haystack ${DATA_DIR}/haystack.txt \
-          --needles ${SAMPLE} \
-          --warmup-haystack ${DATA_DIR}/warmup-haystack.txt \
-          --warmup-needles ${DATA_DIR}/warmup-needles.txt \
-          --warmup-result e
-      fi
-
-      cd - 1>/dev/null
-
-    done
+    cd round-1/${APP}/
+    APP_NAME="${PWD##*/}"
+    run-tests
+    cd - 1>/dev/null
   done
 fi
 

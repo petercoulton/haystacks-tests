@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const readAndSpilt = file =>
-  fs
-    .readFileSync(file)
-    .toString()
-    .match(/[^\r\n]+/g)
+const readline = require('readline');
+const n = new Set();
 
-const h = readAndSpilt(0)
-const n = readAndSpilt(process.argv[process.argv.indexOf('--needles') + 1]);
+readline
+    .createInterface({ input: fs.createReadStream(process.argv[process.argv.indexOf('--needles') + 1]) })
+    .on('line', l => n.add(l))
+    .on('close', () => {
+      const r = readline.createInterface({ input: process.stdin });
+      r.on('line', l => {
+          if (n.has(l) && n.size > 0 ? true : r.close()) {
+              console.log(l);
+              n.delete(l);
+          }
+      });
+    });
 
-for (i = 0; i < h.length; i++) {
-  const d = n.indexOf(h[i]);
-  if (d > -1) {
-    console.log(h[i]);
-    n.splice(d, 1); 
-  } else if (!n.length) { break }
-}

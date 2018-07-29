@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+function printHelp() {
+  cat <<EOF
+USAGE:
+    add-test <NAME>
+
+OPTIONS:
+        <NAME>            Names of the new test
+EOF
+}
+
+if [ ! ${#} -eq 1 ]; then
+  echo "Error: Missing required parameters: NAME"
+  printHelp
+  exit 1
+fi
+
+TEST_NAME="${1}"
+TEST_PATH="round-1/${TEST_NAME}"
+
+echo "Creating test directory: ${TEST_PATH}"
+mkdir -p ${TEST_PATH}
+
+echo "Creating test files: "
+
+echo "    ${TEST_PATH}/run-test"
+cat <<EOF > ${TEST_PATH}/run-test
+#!/usr/bin/env bash
+
+#
+# Edit this file so that your application accepts the haystack file "${1}" and the needles file "${2}"
+# 
+# e.g.
+#     cat "${1}" | ./haystacks-rs --needles "${2}"
+# or
+#     ./haystacks-rs --haystack ${1} --needles "${2}"
+# 
+# 
+EOF
+chmod ug+x ${TEST_PATH}/run-test
+
+echo "    ${TEST_PATH}/${TEST_NAME}"
+cat <<EOF > "${TEST_PATH}/${TEST_NAME}"
+#!/usr/bin/env bash
+
+#
+# Edit this file with your application or replace with a compiled binary
+# 
+
+EOF
+chmod ug+x ${TEST_PATH}/${TEST_NAME}
+
+
+
