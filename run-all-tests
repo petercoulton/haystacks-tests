@@ -75,7 +75,7 @@ function run-tests() {
 
       TIMING_START="$(gdate +%s%3N)"
 
-      TEST_RESULT="$(gtimeout 10s run-test "${HAYSTACK}" "${SAMPLE}")"
+      TEST_RESULT="$(gtimeout 60s run-test "${HAYSTACK}" "${SAMPLE}")"
       RUN_STATUS=${?}
 
       TIMING_END="$(gdate +%s%3N)"
