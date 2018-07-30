@@ -4,15 +4,15 @@ echo "Generating haystack containing 100,000,000 uuids"
 uuid -v4 -n100000000 > data/haystack.txt
 
 echo "Sampling haystack for 1,000 uuids"
-gshuf -n1000 data/haystack.txt | sort -R > data/needles-01.txt
+gshuf -n1000 data/haystack.txt > data/needles-01.txt
 # uuid -v4 -n100 >> data/needles-01.txt
 
 echo "Sampling haystack for 100,000 uuids"
-gshuf -n100000 data/haystack.txt | sort -R > data/needles-02.txt
+gshuf -n100000 data/haystack.txt > data/needles-02.txt
 # uuid -v4 -n100 >> data/needles-02.txt
 
 echo "Sampling haystack for 1,000,000 uuids"
-gshuf -n1000000 data/haystack.txt | sort -R > data/needles-03.txt
+gshuf -n1000000 data/haystack.txt > data/needles-03.txt
 # uuid -v4 -n100 >> data/needles-03.txt
 
 echo "Generating warmup haystack"
