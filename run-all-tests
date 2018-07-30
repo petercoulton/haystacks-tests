@@ -52,7 +52,7 @@ function run-tests() {
   # Warmup Test
   #
 
-  WARMUP_ACTUAL_RESULT="$(gtimeout 10s run-test "${WARMUP_HAYSTACK}" "${WARMUP_NEEDLES}" 2>&1)"
+  WARMUP_ACTUAL_RESULT="$(gtimeout 10s `pwd`/run-test "${WARMUP_HAYSTACK}" "${WARMUP_NEEDLES}" 2>&1)"
 
   if [[ "${WARMUP_ACTUAL_RESULT}" != "${WARMUP_EXPECTED_RESULT}" ]]; then
     echo "${APP_NAME},0,failed warmup"
@@ -75,7 +75,8 @@ function run-tests() {
 
       TIMING_START="$(gdate +%s%3N)"
 
-      TEST_RESULT="$(gtimeout 60s run-test "${HAYSTACK}" "${SAMPLE}")"
+      TEST_RESULT="$(gtimeout 60s `pwd`/run-test "${HAYSTACK}" "${SAMPLE}")"
+
       RUN_STATUS=${?}
 
       TIMING_END="$(gdate +%s%3N)"
@@ -99,14 +100,16 @@ function run-tests() {
 
 
 if [ ! -z "${TEST_NAME}" ]; then
-    cd ${TEST_NAME}
+    cd "${TEST_NAME}"
+    pwd
     APP_NAME="${PWD##*/}"
     run-tests
     cd - 1>/dev/null
 else
 
   for APP in $(ls -1 round-1); do
-    cd round-1/${APP}/
+    cd "round-1/${APP}/"
+    pwd
     APP_NAME="${PWD##*/}"
     run-tests
     cd - 1>/dev/null
