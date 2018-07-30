@@ -29,12 +29,12 @@ cat <<EOF > ${TEST_PATH}/run-test
 #!/usr/bin/env bash
 
 #
-# Edit this file so that your application accepts the haystack file "${1}" and the needles file "${2}"
+# Edit this file so that your application accepts the haystack file "\${1}" and the needles file "\${2}"
 # 
 # e.g.
-#     cat "${1}" | ./haystacks-rs --needles "${2}"
+#     cat "\${1}" | ./haystacks-rs --needles "\${2}"
 # or
-#     ./haystacks-rs --haystack ${1} --needles "${2}"
+#     ./haystacks-rs --haystack \${1} --needles "\${2}"
 # 
 # 
 EOF
