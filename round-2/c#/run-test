@@ -1,0 +1,1 @@
+mono Program.exe --needles "${2}" --haystack "${1}" --threads 16
