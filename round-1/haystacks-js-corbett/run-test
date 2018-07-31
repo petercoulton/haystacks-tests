@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+./haystacks-js-corbett --needles "${2}" --haystack "${1}"

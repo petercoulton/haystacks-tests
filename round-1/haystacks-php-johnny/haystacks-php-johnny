@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php 
+
+$opts = getopt('', ['needles:', 'haystack:']);
+$needles = array_filter(explode("\n", file_get_contents($opts['needles'])));
+$haystack = fopen($opts['haystack'], 'r');
+
+$lineNum = 0;
+$numNeedles = count($needles);
+$found = 0;
+
+while(!feof($haystack) && $found < $numNeedles) {
+  $needle = trim(fgets($haystack));
+  $lineNum++;
+
+  if (in_array($needle, $needles)) {
+    print "$needle\n";
+    $found++;
+  }
+}
+?>

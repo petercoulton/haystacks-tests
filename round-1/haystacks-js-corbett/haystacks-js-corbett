@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const readline = require('readline');
+const n = new Set(
+  fs
+    .readFileSync(process.argv[3])
+    .toString()
+    .split('\n')
+);
+readline
+  .createInterface({
+    input: fs.createReadStream(process.argv[5]),
+    crlfDelay: Infinity,
+    historySize: 0,
+    terminal: false
+  })
+  .on('line', function(l) {
+    if (n.has(l)) {
+      n.delete(l);
+      console.log(l);
+    }
+  })

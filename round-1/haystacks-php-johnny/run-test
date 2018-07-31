@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+./haystacks-php-johnny --needles "${2}" --haystack "${1}"
