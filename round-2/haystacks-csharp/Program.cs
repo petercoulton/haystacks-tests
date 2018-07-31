@@ -43,7 +43,6 @@ namespace Haystack
             bails.Last().LastIndex = long.MaxValue;
 
             Parallel.ForEach(bails, bail => FindNeedles(bail));
-            Console.Error.WriteLine("\n Time taken: {0}", sw.Elapsed);
         }
 
         class Bail

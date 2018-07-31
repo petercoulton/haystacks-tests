@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#! /usr/bin/python
 import sys
 import argparse
 
@@ -17,7 +16,7 @@ with open(args['needles']) as needles:
 try:
     for line in iter(sys.stdin.readline, b''):
         if line in d:
-            print line
+            sys.stdout.write(line)
 except KeyboardInterrupt:
     sys.stdout.flush()
     pass

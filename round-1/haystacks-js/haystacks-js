@@ -2,18 +2,22 @@
 
 const fs = require('fs');
 const readline = require('readline');
-const n = new Set();
 
-readline
-    .createInterface({ input: fs.createReadStream(process.argv[process.argv.indexOf('--needles') + 1]) })
-    .on('line', l => n.add(l))
-    .on('close', () => {
-      const r = readline.createInterface({ input: process.stdin });
-      r.on('line', l => {
-          if (n.has(l) && n.size > 0 ? true : r.close()) {
-              console.log(l);
-              n.delete(l);
-          }
-      });
-    });
+const needles = new Set();
 
+const arg = process.argv[process.argv.indexOf('--needles') + 1];
+
+readline.createInterface({ input: fs.createReadStream(arg) })
+  .on('line', line => needles.add(line))
+  .on('close', line => findNeedles(line))
+
+function findNeedles() {
+  readline
+    .createInterface({ input: process.stdin })
+    .on('line', line => {
+      if (needles.has(line)) {
+        needles.delete(line)
+        console.log(line)
+      }
+    })
+}

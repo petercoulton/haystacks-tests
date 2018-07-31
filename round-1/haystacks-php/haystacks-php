@@ -1,15 +1,11 @@
 #!/usr/bin/env php
 <?php
-ini_set('memory_limit', '-1');
+ini_set('memory_limit', '256M');
 $lines = file($argv[2], FILE_SKIP_EMPTY_LINES);
 $lines = array_flip($lines);
-$handle = fopen($argv[4], "r");
-if ($handle) {
-    while (($line = fgets($handle)) !== false) {
-      if (isset($lines[$line])) {
-        echo $line;
-      }
-    }
-    fclose($handle);
+while($line = fgets(STDIN)){
+  if (isset($lines[$line])) {
+    echo $line;
+  }
 }
 ?>

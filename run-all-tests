@@ -100,21 +100,19 @@ function run-tests() {
 
 
 if [ ! -z "${TEST_NAME}" ]; then
-    cd "${TEST_NAME}"
-    pwd
-    APP_NAME="${PWD##*/}"
+    pushd "${TEST_NAME}" 1>/dev/null
+    APP_NAME="${ROUND},${PWD##*/}"
     run-tests
-    cd - 1>/dev/null
+    popd 1>/dev/null 
 else
-
-  for APP in $(ls -1 round-1); do
-    cd "round-1/${APP}/"
-    pwd
-    APP_NAME="${PWD##*/}"
-    run-tests
-    cd - 1>/dev/null
+  for ROUND in $(ls -1 | grep 'round-*'); do
+    pushd "${ROUND}" 1>/dev/null
+    for APP in $(ls -1); do
+      pushd "${APP}/" 1>/dev/null
+      APP_NAME="${ROUND},${PWD##*/}"
+      run-tests
+      popd 1>/dev/null
+    done
+    popd 1>/dev/null
   done
 fi
-
-
-

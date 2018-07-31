@@ -1,3 +1,9 @@
 #!/usr/bin/env ruby
 
-puts File.readlines(ARGV[0]) & $stdin.to_a
+require 'set'
+
+needles=Set.new File.readlines(ARGV[0])
+
+$stdin.each_line do |line| 
+  puts line if needles.include? line
+end
