@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+awk 'NR==FNR {needles[$1]=$0; next} $1 in needles{print $1}' ${2} ${1}
