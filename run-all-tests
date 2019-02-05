@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# set -o xtrace
+
 
 DATA_DIR="$(pwd)/data"
 HAYSTACK="${DATA_DIR}/haystack.txt"
