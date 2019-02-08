@@ -17,11 +17,11 @@ gshuf -n1000000 data/haystack.txt > data/needles-03.txt
 
 echo "Generating warmup haystack"
 for STRAW in a b c d e; do
-  echo "${STRAW}" >> data/warmup-haystack.txt
+  echo "${STRAW}" > data/warmup-haystack.txt
 done
 
 echo "Generating warmup needles"
 for NEEDLE in e f g; do
-  echo "${NEEDLE}" >> data/warmup-needles.txt
+  echo "${NEEDLE}" > data/warmup-needles.txt
 done
 
